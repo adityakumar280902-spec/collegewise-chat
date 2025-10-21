@@ -1,165 +1,133 @@
-import { Link, useLocation } from "react-router-dom";
-import { ArrowLeft, GraduationCap, MapPin, TrendingUp, Users } from "lucide-react";
+import { useState } from "react";
+import { useLocation, Link } from "react-router-dom";
+import { ArrowLeft, GraduationCap, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useMemo } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const Compare = () => {
+const ComparePage = () => {
   const location = useLocation();
-  const { colleges: collegeDetails } = location.state || { colleges: [] };
+  const { colleges: initialColleges } = location.state || { colleges: [] };
+  
+  const [colleges, setColleges] = useState(initialColleges);
 
-  const summary = useMemo(() => {
-    if (!collegeDetails || collegeDetails.length === 0) {
-      return {
-        bestValue: null,
-        highestPackage: null,
-        bestCampus: null,
-      };
+  if (!colleges || colleges.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">No colleges to compare</h1>
+        <p className="text-muted-foreground mb-8">Please select some colleges from the search results to compare them.</p>
+        <Link to="/">
+          <Button>Back to Search</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const attributes = [
+    { key: 'nirfRank', label: 'NIRF Rank', lowerIsBetter: true },
+    { key: 'fees', label: 'Fees', lowerIsBetter: true },
+    { key: 'avgPackage', label: 'Average Package', lowerIsBetter: false },
+    { key: 'placement', label: 'Placement', lowerIsBetter: false },
+  ];
+
+  const getNumericValue = (value: any) => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      return parseFloat(value.replace(/[^\d.]/g, ''));
     }
+    return 0;
+  };
 
-    const bestValue = collegeDetails.reduce((prev, curr) => {
-      const prevFees = parseInt(prev.fees.replace(/[^\d.]/g, ''));
-      const currFees = parseInt(curr.fees.replace(/[^\d.]/g, ''));
-      return prevFees < currFees ? prev : curr;
-    });
+  const findBestCollegeForAttribute = (attribute: any) => {
+    if(colleges.length === 0) return -1;
+    let bestCollege = colleges[0];
+    for (let i = 1; i < colleges.length; i++) {
+      const currentValue = getNumericValue(colleges[i][attribute.key]);
+      const bestValue = getNumericValue(bestCollege[attribute.key]);
 
-    const highestPackage = collegeDetails.reduce((prev, curr) => {
-      const prevPackage = parseInt(prev.avgPackage.replace(/[^\d.]/g, ''));
-      const currPackage = parseInt(curr.avgPackage.replace(/[^\d.]/g, ''));
-      return prevPackage > currPackage ? prev : curr;
-    });
+      if (attribute.lowerIsBetter) {
+        if (currentValue < bestValue) {
+          bestCollege = colleges[i];
+        }
+      } else {
+        if (currentValue > bestValue) {
+          bestCollege = colleges[i];
+        }
+      }
+    }
+    return bestCollege.id;
+  };
 
-    const bestCampus = collegeDetails.reduce((prev, curr) => {
-      const prevCampus = parseInt(prev.campus.replace(/[^\d.]/g, ''));
-      const currCampus = parseInt(curr.campus.replace(/[^\d.]/g, ''));
-      return prevCampus > currCampus ? prev : curr;
-    });
-
-    return { bestValue, highestPackage, bestCampus };
-  }, [collegeDetails]);
+  const removeCollege = (id: number) => {
+    setColleges(colleges.filter((c:any) => c.id !== id));
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/search">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold">College Comparison</h1>
-                <p className="text-sm text-muted-foreground">
-                  Side-by-side comparison of {collegeDetails.length} colleges
-                </p>
-              </div>
-            </div>
-            <Link to="/seniors">
-              <Button variant="outline" className="gap-2">
-                <Users className="h-4 w-4" />
-                Talk to Seniors
+          <div className="flex items-center gap-4">
+            <Link to="/search">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
+            <h1 className="text-xl font-bold">College Comparison</h1>
           </div>
         </div>
       </header>
 
-      {/* Comparison Grid */}
+      {/* Comparison Table */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {collegeDetails.map((college) => (
-            <Card key={college.id} className="bg-card border-border overflow-hidden card-hover">
-              {/* College Header */}
-              <div className="p-6 border-b border-border bg-primary/5">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                    <college.logo className="h-10 w-10 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-1">{college.name}</h3>
-                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {college.location}
-                    </p>
-                  </div>
-                </div>
+        <div className={`grid grid-cols-${colleges.length + 1} gap-4`}>
+
+          {/* Attribute Headers */}
+          <div className="space-y-4">
+            <Card className="p-4 bg-card border-border font-semibold flex items-center h-48"></Card>
+            {attributes.map((attr) => (
+              <Card key={attr.key} className="p-4 bg-card border-border font-semibold flex items-center h-24">
+                {attr.label}
+              </Card>
+            ))}
+          </div>
+
+          {/* College Columns */}
+          {colleges.map((college:any) => {
+            return (
+              <div key={college.id} className="space-y-4">
+                <Card className="p-4 bg-card border-border text-center relative h-48">
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => removeCollege(college.id)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <Avatar className="mx-auto mb-4 h-16 w-16">
+                    <AvatarImage src={college.logo} />
+                    <AvatarFallback><GraduationCap /></AvatarFallback>
+                  </Avatar>
+                  <h3 className="font-semibold">{college.name}</h3>
+                  <p className="text-sm text-muted-foreground">{college.location}</p>
+                </Card>
+                {attributes.map((attr) => {
+                  const bestId = findBestCollegeForAttribute(attr);
+                  return (
+                    <Card
+                      key={`${college.id}-${attr.key}`}
+                      className={`p-4 flex items-center justify-center text-center text-lg font-semibold h-24 ${
+                        college.id === bestId ? 'bg-primary/10 border-primary/20' : 'bg-card border-border'
+                      }`}>
+                       <span className={college.id === bestId ? 'text-primary' : ''}>
+                          {college[attr.key]}
+                       </span>
+                    </Card>
+                  )
+                })}
               </div>
-
-              {/* Comparison Metrics */}
-              <div className="p-6 space-y-4">
-                <div className="flex justify-between items-center py-3 border-b border-border">
-                  <span className="text-sm text-muted-foreground">NIRF Rank</span>
-                  <span className="font-semibold">#{college.nirfRank}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3 border-b border-border">
-                  <span className="text-sm text-muted-foreground">Closing Rank</span>
-                  <span className="font-semibold text-primary">{college.closingRank}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3 border-b border-border">
-                  <span className="text-sm text-muted-foreground">Annual Fees</span>
-                  <span className="font-semibold">{college.fees}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3 border-b border-border">
-                  <span className="text-sm text-muted-foreground">Placement Rate</span>
-                  <span className="font-semibold">{college.placement}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3 border-b border-border">
-                  <span className="text-sm text-muted-foreground">Avg Package</span>
-                  <span className="font-semibold text-secondary">{college.avgPackage}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3 border-b border-border">
-                  <span className="text-sm text-muted-foreground">Hostel</span>
-                  <span className="font-semibold">{college.hostel}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-sm text-muted-foreground">Campus Size</span>
-                  <span className="font-semibold">{college.campus}</span>
-                </div>
-
-                <Button className="w-full mt-4 gap-2 glow-primary">
-                  <TrendingUp className="h-4 w-4" />
-                  View Details
-                </Button>
-              </div>
-            </Card>
-          ))}
+            )
+          })}
         </div>
-
-        {/* Summary Section */}
-        {summary.bestValue && summary.highestPackage && summary.bestCampus && (
-          <Card className="mt-8 p-6 bg-card border-border">
-            <h3 className="text-lg font-semibold mb-4">Quick Comparison Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Best Value for Money</p>
-                <p className="font-semibold text-primary">{summary.bestValue.name}</p>
-                <p className="text-xs text-muted-foreground">Lowest fees with excellent placement</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Highest Package</p>
-                <p className="font-semibold text-secondary">{summary.highestPackage.name}</p>
-                <p className="text-xs text-muted-foreground">{summary.highestPackage.avgPackage} average package</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Best Campus</p>
-                <p className="font-semibold text-primary">{summary.bestCampus.name}</p>
-                <p className="text-xs text-muted-foreground">{summary.bestCampus.campus} of green campus</p>
-              </div>
-            </div>
-          </Card>
-        )}
       </div>
     </div>
   );
 };
 
-export default Compare;
+export default ComparePage;

@@ -19,35 +19,34 @@ export const ComparisonSheet = ({
 }: any) => {
   const avgStats =
     selectedColleges.length > 0
-      ? selectedColleges.reduce((acc: any, curr: any) => {
-          return {
-            fees: acc.fees + parseInt(curr.fees.replace(/[^0-9]/g, "")),
-            avgPackage:
-              acc.avgPackage +
-              parseInt(curr.avgPackage.replace(/[^0-9]/g, "")),
-            nirfRank: acc.nirfRank + curr.nirfRank,
-          };
-        })
+      ? selectedColleges.reduce(
+          (acc: any, curr: any) => {
+            const fees = parseInt(curr.fees.replace(/[^0-9]/g, "")) || 0;
+            const avgPackage = parseInt(curr.avgPackage.replace(/[^0-9]/g, "")) || 0;
+            return {
+              fees: acc.fees + fees,
+              avgPackage: acc.avgPackage + avgPackage,
+              nirfRank: acc.nirfRank + curr.nirfRank,
+            };
+          },
+          { fees: 0, avgPackage: 0, nirfRank: 0 }
+        )
       : { fees: 0, avgPackage: 0, nirfRank: 0 };
-
-  const onCompare = () => {
-    window.location.href = `/compare?colleges=${selectedColleges
-      .map((c: any) => c.id)
-      .join(",")}`;
-  };
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button className="fixed bottom-5 right-5 shadow-lg shadow-primary/30">
-          Compare ({selectedColleges.length})
-        </Button>
-      </SheetTrigger>
+      {selectedColleges.length > 0 && (
+        <SheetTrigger asChild>
+          <Button className="fixed bottom-5 right-5 shadow-lg shadow-primary/30 glow-primary">
+            Compare ({selectedColleges.length})
+          </Button>
+        </SheetTrigger>
+      )}
       <SheetContent className="w-full md:w-[450px]">
         <SheetHeader>
           <SheetTitle>Comparing {selectedColleges.length} Colleges</SheetTitle>
         </SheetHeader>
-        <div className="flex flex-col space-y-4 mt-4">
+        <div className="flex flex-col space-y-4 mt-4 h-full pb-24 overflow-y-auto">
           {selectedColleges.map((college: any) => (
             <div
               key={college.id}
@@ -62,7 +61,7 @@ export const ComparisonSheet = ({
                 </Avatar>
                 <div>
                   <h3 className="font-semibold">{college.name}</h3>
-                  <p className="text-sm text-gray-500">{college.location}</p>
+                  <p className="text-sm text-muted-foreground">{college.location}</p>
                 </div>
               </div>
               <Button
@@ -78,52 +77,57 @@ export const ComparisonSheet = ({
               </Button>
             </div>
           ))}
-          <Separator />
-          <div className="flex flex-col space-y-2">
-            <h3 className="font-semibold">Average Stats</h3>
-            <div className="flex justify-between">
-              <p>Fees</p>
-              <p>
-                {(avgStats.fees / selectedColleges.length).toLocaleString(
-                  "en-IN",
-                  {
-                    style: "currency",
-                    currency: "INR",
-                  }
-                )}
-              </p>
-            </div>
-            <div className="flex justify-between">
-              <p>Package</p>
-              <p>
-                {(
-                  avgStats.avgPackage / selectedColleges.length
-                ).toLocaleString("en-IN", {
-                  style: "currency",
-                  currency: "INR",
-                })}
-              </p>
-            </div>
-            <div className="flex justify-between">
-              <p>NIRF Rank</p>
-              <Badge variant="outline">
-                #
-                {Math.round(avgStats.nirfRank / selectedColleges.length)}
-              </Badge>
-            </div>
+          {selectedColleges.length > 0 && (
+            <>
+              <Separator />
+              <div className="flex flex-col space-y-2">
+                <h3 className="font-semibold">Average Stats</h3>
+                <div className="flex justify-between">
+                  <p className="text-muted-foreground">Fees</p>
+                  <p className="font-semibold">
+                    {(avgStats.fees / selectedColleges.length).toLocaleString(
+                      "en-IN",
+                      {
+                        style: "currency",
+                        currency: "INR",
+                        maximumFractionDigits: 0,
+                      }
+                    )}
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-muted-foreground">Package</p>
+                  <p className="font-semibold">
+                    {(
+                      avgStats.avgPackage / selectedColleges.length
+                    ).toLocaleString("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                      maximumFractionDigits: 0,
+                    })}
+                    LPA
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-muted-foreground">NIRF Rank</p>
+                  <Badge variant="outline">
+                    #
+                    {Math.round(avgStats.nirfRank / selectedColleges.length)}
+                  </Badge>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        {selectedColleges.length > 0 && (
+          <div className="absolute bottom-5 right-5 left-5">
+            <Link to="/compare" state={{ colleges: selectedColleges }}>
+              <Button className="w-full glow-primary">
+                Compare Colleges <ArrowRight className="ml-2" />
+              </Button>
+            </Link>
           </div>
-          <Separator />
-        </div>
-        <div className="absolute bottom-5 right-5 left-5">
-          <Link to={{
-            pathname: "/compare",
-            state: { colleges: selectedColleges }
-          }}>
-            <Button className="w-full" onClick={onCompare}>
-              Compare Colleges <ArrowRight className="ml-2" />
-            </Button>
-          </Link>
-        </div>
+        )}
       </SheetContent>
     </Sheet>
   );
