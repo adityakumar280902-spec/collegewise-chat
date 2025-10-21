@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ComparisonSheet } from "@/components/ui/comparison-sheet";
+import { useToast } from "@/hooks/use-toast";
 
 const mockColleges = [
   {
@@ -64,12 +66,13 @@ const mockColleges = [
 const SearchResults = () => {
   const location = useLocation();
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const { toast } = useToast();
   
   const examType = searchParams.get("examType");
   const rank = searchParams.get("rank");
   const query = searchParams.get("query");
 
-  const [selectedColleges, setSelectedColleges] = useState<number[]>([]);
+  const [selectedColleges, setSelectedColleges] = useState<any[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
   const filteredColleges = useMemo(() => {
@@ -84,11 +87,18 @@ const SearchResults = () => {
     });
   }, [rank, query]);
 
-  const toggleCollege = (id: number) => {
-    if (selectedColleges.includes(id)) {
-      setSelectedColleges(selectedColleges.filter(cid => cid !== id));
-    } else if (selectedColleges.length < 3) {
-      setSelectedColleges([...selectedColleges, id]);
+  const toggleCollege = (college: any) => {
+    if (selectedColleges.find((c) => c.id === college.id)) {
+      setSelectedColleges(selectedColleges.filter((c) => c.id !== college.id));
+    } else {
+      if (selectedColleges.length < 3) {
+        setSelectedColleges([...selectedColleges, college]);
+      } else {
+        toast({
+          title: "Maximum of 3 colleges can be compared at a time.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -182,7 +192,7 @@ const SearchResults = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold mb-1">
-                  {query ? `Results for "${query}"` : `Colleges for ${examType || ''} Rank ${rank || ''}`}
+                  {query ? `Results for "${query}"` : `Colleges for ${examType || ''} Rank ${rank || '\'}`}
                 </h2>
                 <p className="text-muted-foreground">
                   Found {filteredColleges.length} colleges matching your criteria
@@ -203,7 +213,7 @@ const SearchResults = () => {
                 <Card
                   key={college.id}
                   className="p-6 bg-card border-border card-hover cursor-pointer"
-                  onClick={() => toggleCollege(college.id)}
+                  onClick={() => toggleCollege(college)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -249,13 +259,13 @@ const SearchResults = () => {
                     </div>
                     <Button
                       size="icon"
-                      variant={selectedColleges.includes(college.id) ? "default" : "outline"}
+                      variant={selectedColleges.find((c) => c.id === college.id) ? "default" : "outline"}
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleCollege(college.id);
+                        toggleCollege(college);
                       }}
                     >
-                      <Plus className={`h-5 w-5 transition-transform ${selectedColleges.includes(college.id) ? 'rotate-45' : ''}`} />
+                      <Plus className={`h-5 w-5 transition-transform ${selectedColleges.find((c) => c.id === college.id) ? 'rotate-45' : ''}`} />
                     </Button>
                   </div>
                 </Card>
@@ -264,6 +274,7 @@ const SearchResults = () => {
           </div>
         </div>
       </div>
+      <ComparisonSheet selectedColleges={selectedColleges} setSelectedColleges={setSelectedColleges} />
     </div>
   );
 };
