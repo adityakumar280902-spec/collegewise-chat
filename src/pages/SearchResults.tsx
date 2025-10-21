@@ -91,11 +91,11 @@ const SearchResults = () => {
     if (selectedColleges.find((c) => c.id === college.id)) {
       setSelectedColleges(selectedColleges.filter((c) => c.id !== college.id));
     } else {
-      if (selectedColleges.length < 3) {
+      if (selectedColleges.length < 4) {
         setSelectedColleges([...selectedColleges, college]);
       } else {
         toast({
-          title: "Maximum of 3 colleges can be compared at a time.",
+          title: "Maximum of 4 colleges can be compared at a time.",
           variant: "destructive",
         });
       }
@@ -107,13 +107,13 @@ const SearchResults = () => {
       case "High":
         return "bg-primary/20 text-primary border-primary/30";
       case "Medium":
-        return "bg-secondary/20 text-secondary border-secondary/30";
+        return "bg-yellow-500/20 text-yellow-500 border-yellow-500/30";
       default:
         return "bg-muted/20 text-muted-foreground border-muted/30";
     }
   };
   
-  const collegesToCompare = filteredColleges.filter(college => selectedColleges.includes(college.id));
+  const collegesToCompare = filteredColleges.filter(college => selectedColleges.some(c => c.id === college.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,11 +121,6 @@ const SearchResults = () => {
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
             <div className="flex-1 flex items-center gap-2">
               <div className="relative flex-1 max-w-2xl">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -135,13 +130,23 @@ const SearchResults = () => {
                   defaultValue={query || ""}
                 />
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <SlidersHorizontal className="h-5 w-5" />
-              </Button>
+               {selectedColleges.length > 0 ? (
+                <Link to={{ pathname: "/compare"}} state={{ colleges: collegesToCompare }}>
+                  <Button className="gap-2 glow-primary">
+                    Compare {selectedColleges.length} Colleges
+                    <TrendingUp className="h-4 w-4" />
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex-shrink-0"
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -192,27 +197,23 @@ const SearchResults = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold mb-1">
-                  {query ? `Results for "${query}"` : `Colleges for ${examType || ''} Rank ${rank || '\'}`}
+                  {query ? `Results for "${query}"` : `Colleges for ${examType || ''} Rank ${rank || ''}`}
                 </h2>
                 <p className="text-muted-foreground">
                   Found {filteredColleges.length} colleges matching your criteria
                 </p>
               </div>
-              {selectedColleges.length > 0 && (
-                <Link to={{ pathname: "/compare", state: { colleges: collegesToCompare } }}>
-                  <Button className="gap-2 glow-primary">
-                    Compare {selectedColleges.length} Colleges
-                    <TrendingUp className="h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
             </div>
 
             <div className="space-y-4">
               {filteredColleges.map((college) => (
                 <Card
                   key={college.id}
-                  className="p-6 bg-card border-border card-hover cursor-pointer"
+                  className={`p-6 bg-card border-border card-hover cursor-pointer ${
+                    selectedColleges.find((c) => c.id === college.id)
+                      ? 'border-primary shadow-lg'
+                      : ''
+                  }`}
                   onClick={() => toggleCollege(college)}
                 >
                   <div className="flex items-start justify-between">
