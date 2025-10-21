@@ -27,7 +27,7 @@ const Index = () => {
     const examType = formData.get("examType");
     const rank = formData.get("rank");
     if (examType && rank) {
-      navigate("/search");
+      navigate(`/search?examType=${examType}&rank=${rank}`);
     }
   };
 
@@ -134,7 +134,7 @@ const Index = () => {
                   <button
                     key={college.id}
                     className="px-4 py-2 rounded-full bg-muted hover:bg-muted/80 text-sm transition-colors"
-                    onClick={() => navigate("/search")}
+                    onClick={() => navigate(`/search?query=${college.name}`)}
                   >
                     {college.name}
                   </button>
