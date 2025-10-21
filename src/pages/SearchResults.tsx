@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Search, SlidersHorizontal, ArrowLeft, Plus, TrendingUp, MapPin, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,8 +63,26 @@ const mockColleges = [
 
 const SearchResults = () => {
   const location = useLocation();
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  
+  const examType = searchParams.get("examType");
+  const rank = searchParams.get("rank");
+  const query = searchParams.get("query");
+
   const [selectedColleges, setSelectedColleges] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+
+  const filteredColleges = useMemo(() => {
+    return mockColleges.filter(college => {
+      if (rank) {
+        return college.closingRank >= parseInt(rank, 10);
+      }
+      if (query) {
+        return college.name.toLowerCase().includes(query.toLowerCase());
+      }
+      return true; // Show all if no query or rank
+    });
+  }, [rank, query]);
 
   const toggleCollege = (id: number) => {
     if (selectedColleges.includes(id)) {
@@ -85,7 +103,7 @@ const SearchResults = () => {
     }
   };
   
-  const collegesToCompare = mockColleges.filter(college => selectedColleges.includes(college.id));
+  const collegesToCompare = filteredColleges.filter(college => selectedColleges.includes(college.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,6 +122,7 @@ const SearchResults = () => {
                 <Input
                   placeholder="Search for colleges, branches, or locations..."
                   className="pl-10 bg-card border-border"
+                  defaultValue={query || ""}
                 />
               </div>
               <Button
@@ -163,14 +182,14 @@ const SearchResults = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold mb-1">
-                  Colleges for JEE Main Rank 15,000
+                  {query ? `Results for "${query}"` : `Colleges for ${examType || ''} Rank ${rank || ''}`}
                 </h2>
                 <p className="text-muted-foreground">
-                  Found {mockColleges.length} colleges matching your rank
+                  Found {filteredColleges.length} colleges matching your criteria
                 </p>
               </div>
               {selectedColleges.length > 0 && (
-                <Link to="/compare" state={{ colleges: collegesToCompare }}>
+                <Link to={{ pathname: "/compare", state: { colleges: collegesToCompare } }}>
                   <Button className="gap-2 glow-primary">
                     Compare {selectedColleges.length} Colleges
                     <TrendingUp className="h-4 w-4" />
@@ -180,7 +199,7 @@ const SearchResults = () => {
             </div>
 
             <div className="space-y-4">
-              {mockColleges.map((college) => (
+              {filteredColleges.map((college) => (
                 <Card
                   key={college.id}
                   className="p-6 bg-card border-border card-hover cursor-pointer"
