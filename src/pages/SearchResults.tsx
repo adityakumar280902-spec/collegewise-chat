@@ -17,7 +17,8 @@ const mockColleges = [
     placement: "98%",
     avgPackage: "₹22L",
     probability: "High",
-    type: "Government"
+    type: "Government",
+    logo: GraduationCap
   },
   {
     id: 2,
@@ -29,7 +30,8 @@ const mockColleges = [
     placement: "95%",
     avgPackage: "₹18L",
     probability: "Medium",
-    type: "Private"
+    type: "Private",
+    logo: GraduationCap
   },
   {
     id: 3,
@@ -41,7 +43,8 @@ const mockColleges = [
     placement: "92%",
     avgPackage: "₹15L",
     probability: "High",
-    type: "Government"
+    type: "Government",
+    logo: GraduationCap
   },
   {
     id: 4,
@@ -53,7 +56,8 @@ const mockColleges = [
     placement: "94%",
     avgPackage: "₹19L",
     probability: "Medium",
-    type: "Government"
+    type: "Government",
+    logo: GraduationCap
   },
 ];
 
@@ -80,6 +84,8 @@ const SearchResults = () => {
         return "bg-muted/20 text-muted-foreground border-muted/30";
     }
   };
+  
+  const collegesToCompare = mockColleges.filter(college => selectedColleges.includes(college.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -164,7 +170,7 @@ const SearchResults = () => {
                 </p>
               </div>
               {selectedColleges.length > 0 && (
-                <Link to="/compare" state={{ colleges: selectedColleges }}>
+                <Link to="/compare" state={{ colleges: collegesToCompare }}>
                   <Button className="gap-2 glow-primary">
                     Compare {selectedColleges.length} Colleges
                     <TrendingUp className="h-4 w-4" />

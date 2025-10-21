@@ -1,51 +1,43 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, GraduationCap, MapPin, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
-const mockCollegeDetails = [
-  {
-    id: 1,
-    name: "IIT Bombay",
-    location: "Mumbai, Maharashtra",
-    logo: GraduationCap,
-    nirfRank: 3,
-    closingRank: 67,
-    fees: "₹2.5L/year",
-    placement: "98%",
-    avgPackage: "₹22L",
-    hostel: "Available",
-    campus: "550 acres"
-  },
-  {
-    id: 2,
-    name: "BITS Pilani",
-    location: "Pilani, Rajasthan",
-    logo: GraduationCap,
-    nirfRank: 25,
-    closingRank: 8500,
-    fees: "₹5.3L/year",
-    placement: "95%",
-    avgPackage: "₹18L",
-    hostel: "Available",
-    campus: "328 acres"
-  },
-  {
-    id: 3,
-    name: "NIT Trichy",
-    location: "Tiruchirappalli, Tamil Nadu",
-    logo: GraduationCap,
-    nirfRank: 9,
-    closingRank: 12000,
-    fees: "₹1.8L/year",
-    placement: "92%",
-    avgPackage: "₹15L",
-    hostel: "Available",
-    campus: "800 acres"
-  }
-];
+import { useMemo } from "react";
 
 const Compare = () => {
+  const location = useLocation();
+  const { colleges: collegeDetails } = location.state || { colleges: [] };
+
+  const summary = useMemo(() => {
+    if (!collegeDetails || collegeDetails.length === 0) {
+      return {
+        bestValue: null,
+        highestPackage: null,
+        bestCampus: null,
+      };
+    }
+
+    const bestValue = collegeDetails.reduce((prev, curr) => {
+      const prevFees = parseInt(prev.fees.replace(/[^\d.]/g, ''));
+      const currFees = parseInt(curr.fees.replace(/[^\d.]/g, ''));
+      return prevFees < currFees ? prev : curr;
+    });
+
+    const highestPackage = collegeDetails.reduce((prev, curr) => {
+      const prevPackage = parseInt(prev.avgPackage.replace(/[^\d.]/g, ''));
+      const currPackage = parseInt(curr.avgPackage.replace(/[^\d.]/g, ''));
+      return prevPackage > currPackage ? prev : curr;
+    });
+
+    const bestCampus = collegeDetails.reduce((prev, curr) => {
+      const prevCampus = parseInt(prev.campus.replace(/[^\d.]/g, ''));
+      const currCampus = parseInt(curr.campus.replace(/[^\d.]/g, ''));
+      return prevCampus > currCampus ? prev : curr;
+    });
+
+    return { bestValue, highestPackage, bestCampus };
+  }, [collegeDetails]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -61,7 +53,7 @@ const Compare = () => {
               <div>
                 <h1 className="text-xl font-bold">College Comparison</h1>
                 <p className="text-sm text-muted-foreground">
-                  Side-by-side comparison of {mockCollegeDetails.length} colleges
+                  Side-by-side comparison of {collegeDetails.length} colleges
                 </p>
               </div>
             </div>
@@ -78,7 +70,7 @@ const Compare = () => {
       {/* Comparison Grid */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {mockCollegeDetails.map((college) => (
+          {collegeDetails.map((college) => (
             <Card key={college.id} className="bg-card border-border overflow-hidden card-hover">
               {/* College Header */}
               <div className="p-6 border-b border-border bg-primary/5">
@@ -143,26 +135,28 @@ const Compare = () => {
         </div>
 
         {/* Summary Section */}
-        <Card className="mt-8 p-6 bg-card border-border">
-          <h3 className="text-lg font-semibold mb-4">Quick Comparison Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Best Value for Money</p>
-              <p className="font-semibold text-primary">NIT Trichy</p>
-              <p className="text-xs text-muted-foreground">Lowest fees with excellent placement</p>
+        {summary.bestValue && summary.highestPackage && summary.bestCampus && (
+          <Card className="mt-8 p-6 bg-card border-border">
+            <h3 className="text-lg font-semibold mb-4">Quick Comparison Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Best Value for Money</p>
+                <p className="font-semibold text-primary">{summary.bestValue.name}</p>
+                <p className="text-xs text-muted-foreground">Lowest fees with excellent placement</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Highest Package</p>
+                <p className="font-semibold text-secondary">{summary.highestPackage.name}</p>
+                <p className="text-xs text-muted-foreground">{summary.highestPackage.avgPackage} average package</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Best Campus</p>
+                <p className="font-semibold text-primary">{summary.bestCampus.name}</p>
+                <p className="text-xs text-muted-foreground">{summary.bestCampus.campus} of green campus</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Highest Package</p>
-              <p className="font-semibold text-secondary">IIT Bombay</p>
-              <p className="text-xs text-muted-foreground">₹22L average package</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Best Campus</p>
-              <p className="font-semibold text-primary">NIT Trichy</p>
-              <p className="text-xs text-muted-foreground">800 acres of green campus</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        )}
       </div>
     </div>
   );

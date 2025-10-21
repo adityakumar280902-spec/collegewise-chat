@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, TrendingUp, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTrendingColleges } from "@/lib/api";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [examType, setExamType] = useState("");
-  const [rank, setRank] = useState("");
 
-  const handleSearch = () => {
+  const { data: trendingColleges, isLoading } = useQuery({
+    queryKey: ["trendingColleges"],
+    queryFn: fetchTrendingColleges,
+  });
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const examType = formData.get("examType");
+    const rank = formData.get("rank");
     if (examType && rank) {
       navigate("/search");
     }
@@ -51,15 +59,6 @@ const Index = () => {
     { value: "cuet", label: "CUET" },
   ];
 
-  const trendingColleges = [
-    "IIT Bombay",
-    "BITS Pilani",
-    "NIT Trichy",
-    "IIIT Hyderabad",
-    "VIT Vellore",
-    "AIIMS Delhi"
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -85,9 +84,9 @@ const Index = () => {
 
           {/* Search Card */}
           <Card className="p-8 bg-card border-border glow-primary">
-            <div className="space-y-4">
+            <form onSubmit={handleSearch} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select value={examType} onValueChange={setExamType}>
+                <Select name="examType">
                   <SelectTrigger className="bg-background border-border h-14 text-lg">
                     <SelectValue placeholder="Select Exam Type" />
                   </SelectTrigger>
@@ -102,38 +101,46 @@ const Index = () => {
 
                 <Input
                   type="number"
+                  name="rank"
                   placeholder="Enter Your Rank"
-                  value={rank}
-                  onChange={(e) => setRank(e.target.value)}
                   className="bg-background border-border h-14 text-lg"
+                  required
                 />
               </div>
 
               <Button
+                type="submit"
                 size="lg"
                 className="w-full h-14 text-lg gap-2 glow-primary"
-                onClick={handleSearch}
               >
                 <Search className="h-5 w-5" />
                 Find Colleges
               </Button>
-            </div>
+            </form>
           </Card>
 
           {/* Trending Colleges */}
           <div className="mt-8">
             <p className="text-sm text-muted-foreground mb-4">Trending Searches:</p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {trendingColleges.map((college) => (
-                <button
-                  key={college}
-                  className="px-4 py-2 rounded-full bg-muted hover:bg-muted/80 text-sm transition-colors"
-                  onClick={() => navigate("/search")}
-                >
-                  {college}
-                </button>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-8 w-32 bg-muted/50 rounded-full animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {trendingColleges?.map((college) => (
+                  <button
+                    key={college.id}
+                    className="px-4 py-2 rounded-full bg-muted hover:bg-muted/80 text-sm transition-colors"
+                    onClick={() => navigate("/search")}
+                  >
+                    {college.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -184,7 +191,7 @@ const Index = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <Search className="h-5 w-5" />
+              <Search className_="h-5 w-5" />
               Start Exploring
             </Button>
           </Card>
