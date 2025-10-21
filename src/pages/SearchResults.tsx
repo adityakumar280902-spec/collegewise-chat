@@ -113,8 +113,6 @@ const SearchResults = () => {
     }
   };
   
-  const collegesToCompare = filteredColleges.filter(college => selectedColleges.some(c => c.id === college.id));
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -131,7 +129,7 @@ const SearchResults = () => {
                 />
               </div>
                {selectedColleges.length > 0 ? (
-                <Link to={{ pathname: "/compare"}} state={{ colleges: collegesToCompare }}>
+                <Link to={{ pathname: "/compare"}} state={{ colleges: selectedColleges }}>
                   <Button className="gap-2 glow-primary">
                     Compare {selectedColleges.length} Colleges
                     <TrendingUp className="h-4 w-4" />
