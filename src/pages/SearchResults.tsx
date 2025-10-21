@@ -90,9 +90,15 @@ const SearchResults = () => {
   const toggleCollege = (college: any) => {
     if (selectedColleges.find((c) => c.id === college.id)) {
       setSelectedColleges(selectedColleges.filter((c) => c.id !== college.id));
+      toast({
+        title: `${college.name} removed from comparison.`,
+      });
     } else {
       if (selectedColleges.length < 4) {
         setSelectedColleges([...selectedColleges, college]);
+        toast({
+          title: `${college.name} added to comparison.`,
+        });
       } else {
         toast({
           title: "Maximum of 4 colleges can be compared at a time.",
@@ -213,6 +219,7 @@ const SearchResults = () => {
                       : ''
                   }`}
                   onClick={() => toggleCollege(college)}
+                  
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
