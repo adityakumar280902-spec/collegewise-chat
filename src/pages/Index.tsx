@@ -191,7 +191,7 @@ const Index = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <Search className_="h-5 w-5" />
+              <Search className="h-5 w-5" />
               Start Exploring
             </Button>
           </Card>
