@@ -8,6 +8,7 @@ import SearchResults from "./pages/SearchResults";
 import Compare from "./pages/Compare";
 import Seniors from "./pages/Seniors";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin"; // Import the Admin component
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/search" element={<SearchResults />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/seniors" element={<Seniors />} />
+          <Route path="/admin" element={<Admin />} /> {/* Add the admin route */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

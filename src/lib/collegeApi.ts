@@ -1,12 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
 export interface College {
   college_id: number;
   college_name: string;
-  type: string;
+  type: string | null;
   nirf_rank: number | null;
-  state: string;
-  city: string;
+  state: string | null;
+  city: string | null;
   avg_placement: number | null;
   median_placement: number | null;
   image_logo: string | null;
@@ -51,10 +52,8 @@ export const searchCollegesByRank = async (
   examType: string,
   rank: number
 ): Promise<CollegeWithDetails[]> => {
-  // Normalize exam type to match database format
   const normalizedExam = examType.toUpperCase().replace(/-/g, '_');
   
-  // Fetch cutoffs that match the exam and are within reach
   const { data: cutoffs, error: cutoffsError } = await supabase
     .from('cutoffs')
     .select(`
@@ -76,7 +75,6 @@ export const searchCollegesByRank = async (
 
   if (!cutoffs) return [];
 
-  // Group by college and aggregate data
   const collegeMap = new Map<number, CollegeWithDetails>();
 
   cutoffs.forEach((cutoff: any) => {
@@ -100,7 +98,6 @@ export const searchCollegesByRank = async (
 
     const collegeData = collegeMap.get(college.college_id)!;
     
-    // Keep the best (lowest) closing rank
     if (cutoff.closing_rank < (collegeData.closingRank || Infinity)) {
       collegeData.closingRank = cutoff.closing_rank;
       collegeData.probability = calculateProbability(rank, cutoff.closing_rank);
@@ -189,4 +186,95 @@ export const getTrendingColleges = async (): Promise<CollegeWithDetails[]> => {
       avgPackage: college.median_placement ? `₹${college.median_placement}L` : 'N/A',
     };
   });
+};
+
+// --- College CRUD ---
+export const getColleges = async (): Promise<College[]> => {
+  const { data, error } = await supabase.from("colleges").select("*");
+  if (error) throw error;
+  return data || [];
+};
+
+export const getCollegeById = async (id: number): Promise<College | null> => {
+    const { data, error } = await supabase.from("colleges").select("*").eq("college_id", id).single();
+    if (error) throw error;
+    return data as College | null;
+};
+
+export const createCollege = async (college: Database['public']['Tables']['colleges']['Insert']): Promise<College> => {
+    const { data, error } = await supabase.from("colleges").insert(college).select().single();
+    if (error) throw error;
+    return data as College;
+};
+
+export const updateCollege = async (id: number, college: Partial<College>): Promise<College> => {
+    const { data, error } = await supabase.from("colleges").update(college).eq("college_id", id).select().single();
+    if (error) throw error;
+    return data as College;
+};
+
+export const deleteCollege = async (id: number): Promise<void> => {
+    const { error } = await supabase.from("colleges").delete().eq("college_id", id);
+    if (error) throw error;
+};
+
+
+// --- Program CRUD ---
+export const getPrograms = async (): Promise<Program[]> => {
+    const { data, error } = await supabase.from("programs").select("*");
+    if (error) throw error;
+    return data || [];
+};
+
+export const getProgramById = async (id: number): Promise<Program | null> => {
+    const { data, error } = await supabase.from("programs").select("*").eq("program_id", id).single();
+    if (error) throw error;
+    return data as Program | null;
+};
+
+export const createProgram = async (program: Database['public']['Tables']['programs']['Insert']): Promise<Program> => {
+    const { data, error } = await supabase.from("programs").insert(program).select().single();
+    if (error) throw error;
+    return data as Program;
+};
+
+export const updateProgram = async (id: number, program: Partial<Program>): Promise<Program> => {
+    const { data, error } = await supabase.from("programs").update(program).eq("program_id", id).select().single();
+    if (error) throw error;
+    return data as Program;
+};
+
+export const deleteProgram = async (id: number): Promise<void> => {
+    const { error } = await supabase.from("programs").delete().eq("program_id", id);
+    if (error) throw error;
+};
+
+// --- Cutoff CRUD ---
+export const getCutoffs = async (): Promise<Cutoff[]> => {
+    const { data, error } = await supabase.from("cutoffs").select("*");
+    if (error) throw error;
+    return data || [];
+};
+
+export const getCutoffById = async (id: number): Promise<Cutoff | null> => {
+    const { data, error } = await supabase.from("cutoffs").select("*").eq("cutoff_id", id).single();
+    if (error) throw error;
+    return data as Cutoff | null;
+};
+
+export const createCutoff = async (cutoff: Database['public']['Tables']['cutoffs']['Insert']): Promise<Cutoff> => {
+    const { data, error } = await supabase.from("cutoffs").insert(cutoff).select().single();
+    if (error) throw error;
+    return data as Cutoff;
+};
+
+export const updateCutoff = async (id: number, cutoff: Partial<Cutoff>): Promise<Cutoff> => {
+    const { data, error } = await supabase.from("cutoffs").update(cutoff).eq("cutoff_id", id).select().single();
+    if (error) throw error;
+    return data as Cutoff;
+};
+
+export const deleteCutoff = async (id: number): Promise<void> => {
+    const { error } = await supabase.from("cutoffs").delete().eq("cutoff_id", id);
+    if (error) throw error;
 };
