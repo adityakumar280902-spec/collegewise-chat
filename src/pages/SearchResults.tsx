@@ -7,61 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ComparisonSheet } from "@/components/ui/comparison-sheet";
 import { useToast } from "@/hooks/use-toast";
-
-const mockColleges = [
-  {
-    id: 1,
-    name: "IIT Bombay",
-    location: "Mumbai, Maharashtra",
-    nirfRank: 3,
-    closingRank: 67,
-    fees: "₹2.5L/year",
-    placement: "98%",
-    avgPackage: "₹22L",
-    probability: "High",
-    type: "Government",
-    logo: GraduationCap
-  },
-  {
-    id: 2,
-    name: "BITS Pilani",
-    location: "Pilani, Rajasthan",
-    nirfRank: 25,
-    closingRank: 8500,
-    fees: "₹5.3L/year",
-    placement: "95%",
-    avgPackage: "₹18L",
-    probability: "Medium",
-    type: "Private",
-    logo: GraduationCap
-  },
-  {
-    id: 3,
-    name: "NIT Trichy",
-    location: "Tiruchirappalli, Tamil Nadu",
-    nirfRank: 9,
-    closingRank: 12000,
-    fees: "₹1.8L/year",
-    placement: "92%",
-    avgPackage: "₹15L",
-    probability: "High",
-    type: "Government",
-    logo: GraduationCap
-  },
-  {
-    id: 4,
-    name: "IIIT Hyderabad",
-    location: "Hyderabad, Telangana",
-    nirfRank: 32,
-    closingRank: 15000,
-    fees: "₹3.2L/year",
-    placement: "94%",
-    avgPackage: "₹19L",
-    probability: "Medium",
-    type: "Government",
-    logo: GraduationCap
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { searchCollegesByRank, searchCollegesByName } from "@/lib/api";
 
 const SearchResults = () => {
   const location = useLocation();
@@ -75,17 +22,21 @@ const SearchResults = () => {
   const [selectedColleges, setSelectedColleges] = useState<any[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredColleges = useMemo(() => {
-    return mockColleges.filter(college => {
-      if (rank) {
-        return college.closingRank >= parseInt(rank, 10);
+  // Fetch colleges based on search parameters
+  const { data: colleges, isLoading } = useQuery({
+    queryKey: ["searchColleges", examType, rank, query],
+    queryFn: async () => {
+      if (rank && examType) {
+        return await searchCollegesByRank(examType, parseInt(rank, 10));
+      } else if (query) {
+        return await searchCollegesByName(query);
       }
-      if (query) {
-        return college.name.toLowerCase().includes(query.toLowerCase());
-      }
-      return true; // Show all if no query or rank
-    });
-  }, [rank, query]);
+      return [];
+    },
+    enabled: !!(rank && examType) || !!query,
+  });
+
+  const filteredColleges = colleges || [];
 
   const toggleCollege = (college: any) => {
     if (selectedColleges.find((c) => c.id === college.id)) {
@@ -209,8 +160,36 @@ const SearchResults = () => {
               </div>
             </div>
 
-            <div className="space-y-4">
-              {filteredColleges.map((college) => (
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <Card key={i} className="p-6 bg-card border-border">
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 rounded-lg bg-muted animate-pulse" />
+                      <div className="flex-1 space-y-3">
+                        <div className="h-6 bg-muted rounded animate-pulse w-1/3" />
+                        <div className="h-4 bg-muted rounded animate-pulse w-1/2" />
+                        <div className="grid grid-cols-4 gap-4">
+                          {[...Array(4)].map((_, j) => (
+                            <div key={j} className="h-10 bg-muted rounded animate-pulse" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredColleges.length === 0 ? (
+              <Card className="p-12 text-center bg-card border-border">
+                <GraduationCap className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold mb-2">No colleges found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria or filters
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {filteredColleges.map((college) => (
                 <Card
                   key={college.id}
                   className={`p-6 bg-card border-border card-hover cursor-pointer ${
@@ -276,7 +255,8 @@ const SearchResults = () => {
                   </div>
                 </Card>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

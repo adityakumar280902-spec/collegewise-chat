@@ -14,7 +14,249 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          college_id: number | null
+          message: string
+          message_id: number
+          sender_name: string | null
+          senior_id: number | null
+          sent_at: string | null
+        }
+        Insert: {
+          college_id?: number | null
+          message: string
+          message_id?: number
+          sender_name?: string | null
+          senior_id?: number | null
+          sent_at?: string | null
+        }
+        Update: {
+          college_id?: number | null
+          message?: string
+          message_id?: number
+          sender_name?: string | null
+          senior_id?: number | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["college_id"]
+          },
+          {
+            foreignKeyName: "chat_messages_senior_id_fkey"
+            columns: ["senior_id"]
+            isOneToOne: false
+            referencedRelation: "senior_profiles"
+            referencedColumns: ["senior_id"]
+          },
+        ]
+      }
+      colleges: {
+        Row: {
+          avg_placement: number | null
+          city: string | null
+          college_id: number
+          college_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          description: string | null
+          image_logo: string | null
+          median_placement: number | null
+          nirf_rank: number | null
+          state: string | null
+          type: string | null
+          website: string | null
+        }
+        Insert: {
+          avg_placement?: number | null
+          city?: string | null
+          college_id?: number
+          college_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          image_logo?: string | null
+          median_placement?: number | null
+          nirf_rank?: number | null
+          state?: string | null
+          type?: string | null
+          website?: string | null
+        }
+        Update: {
+          avg_placement?: number | null
+          city?: string | null
+          college_id?: number
+          college_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          image_logo?: string | null
+          median_placement?: number | null
+          nirf_rank?: number | null
+          state?: string | null
+          type?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      comparisons: {
+        Row: {
+          college_ids: string
+          comparison_id: number
+          created_at: string | null
+          session_id: string
+        }
+        Insert: {
+          college_ids: string
+          comparison_id?: number
+          created_at?: string | null
+          session_id: string
+        }
+        Update: {
+          college_ids?: string
+          comparison_id?: number
+          created_at?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
+      cutoffs: {
+        Row: {
+          category: string | null
+          closing_rank: number | null
+          cutoff_id: number
+          exam_type: string | null
+          last_updated: string | null
+          opening_rank: number | null
+          percentile: number | null
+          program_id: number | null
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          closing_rank?: number | null
+          cutoff_id?: number
+          exam_type?: string | null
+          last_updated?: string | null
+          opening_rank?: number | null
+          percentile?: number | null
+          program_id?: number | null
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          closing_rank?: number | null
+          cutoff_id?: number
+          exam_type?: string | null
+          last_updated?: string | null
+          opening_rank?: number | null
+          percentile?: number | null
+          program_id?: number | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cutoffs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["program_id"]
+          },
+        ]
+      }
+      programs: {
+        Row: {
+          annual_fee: number | null
+          college_id: number | null
+          created_at: string | null
+          degree_level: string | null
+          duration_years: number | null
+          hostel_available: boolean | null
+          program_id: number
+          program_name: string
+          seats_total: number | null
+        }
+        Insert: {
+          annual_fee?: number | null
+          college_id?: number | null
+          created_at?: string | null
+          degree_level?: string | null
+          duration_years?: number | null
+          hostel_available?: boolean | null
+          program_id?: number
+          program_name: string
+          seats_total?: number | null
+        }
+        Update: {
+          annual_fee?: number | null
+          college_id?: number | null
+          created_at?: string | null
+          degree_level?: string | null
+          duration_years?: number | null
+          hostel_available?: boolean | null
+          program_id?: number
+          program_name?: string
+          seats_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programs_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["college_id"]
+          },
+        ]
+      }
+      senior_profiles: {
+        Row: {
+          available: boolean | null
+          college_id: number | null
+          contact_link: string | null
+          description: string | null
+          name: string
+          passing_year: number | null
+          program_name: string | null
+          senior_id: number
+        }
+        Insert: {
+          available?: boolean | null
+          college_id?: number | null
+          contact_link?: string | null
+          description?: string | null
+          name: string
+          passing_year?: number | null
+          program_name?: string | null
+          senior_id?: number
+        }
+        Update: {
+          available?: boolean | null
+          college_id?: number | null
+          contact_link?: string | null
+          description?: string | null
+          name?: string
+          passing_year?: number | null
+          program_name?: string | null
+          senior_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "senior_profiles_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["college_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
