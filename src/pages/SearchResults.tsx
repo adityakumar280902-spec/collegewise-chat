@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Search, SlidersHorizontal, ArrowLeft, Plus, TrendingUp, MapPin, GraduationCap } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, TrendingUp, MapPin, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ComparisonSheet } from "@/components/ui/comparison-sheet";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { searchCollegesByRank, searchCollegesByName } from "@/lib/api";
+import { searchCollegesByRank, searchCollegesByName } from "@/lib/collegeApi";
 
 const SearchResults = () => {
   const location = useLocation();
@@ -39,16 +39,16 @@ const SearchResults = () => {
   const filteredColleges = colleges || [];
 
   const toggleCollege = (college: any) => {
-    if (selectedColleges.find((c) => c.id === college.id)) {
-      setSelectedColleges(selectedColleges.filter((c) => c.id !== college.id));
+    if (selectedColleges.find((c) => c.college_id === college.college_id)) {
+      setSelectedColleges(selectedColleges.filter((c) => c.college_id !== college.college_id));
       toast({
-        title: `${college.name} removed from comparison.`,
+        title: `${college.college_name} removed from comparison.`,
       });
     } else {
       if (selectedColleges.length < 4) {
         setSelectedColleges([...selectedColleges, college]);
         toast({
-          title: `${college.name} added to comparison.`,
+          title: `${college.college_name} added to comparison.`,
         });
       } else {
         toast({
@@ -180,7 +180,7 @@ const SearchResults = () => {
                 ))}
               </div>
             ) : filteredColleges.length === 0 ? (
-              <Card className="p-12 text-center bg-card border-border">
+              <Card className="p-12 bg-card border-border text-center">
                 <GraduationCap className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">No colleges found</h3>
                 <p className="text-muted-foreground">
@@ -190,71 +190,72 @@ const SearchResults = () => {
             ) : (
               <div className="space-y-4">
                 {filteredColleges.map((college) => (
-                <Card
-                  key={college.id}
-                  className={`p-6 bg-card border-border card-hover cursor-pointer ${
-                    selectedColleges.find((c) => c.id === college.id)
-                      ? 'border-primary shadow-lg'
-                      : ''
-                  }`}
-                  onClick={() => toggleCollege(college)}
-                  
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <GraduationCap className="h-8 w-8 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-xl font-semibold">{college.name}</h3>
-                            <Badge variant="outline" className={getProbabilityColor(college.probability)}>
-                              {college.probability} Chance
-                            </Badge>
+                  <Card
+                    key={college.college_id}
+                    className={`p-6 bg-card border-border card-hover cursor-pointer ${
+                      selectedColleges.find((c) => c.college_id === college.college_id)
+                        ? 'border-primary shadow-lg'
+                        : ''
+                    }`}
+                    onClick={() => toggleCollege(college)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-start gap-4">
+                          <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <GraduationCap className="h-8 w-8 text-primary" />
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              {college.location}
-                            </span>
-                            <span>NIRF Rank: #{college.nirfRank}</span>
-                            <span>{college.type}</span>
-                          </div>
-                          <div className="grid grid-cols-4 gap-4">
-                            <div>
-                              <p className="text-xs text-muted-foreground">Closing Rank</p>
-                              <p className="font-semibold text-primary">{college.closingRank}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-xl font-semibold">{college.college_name}</h3>
+                              {college.probability && (
+                                <Badge variant="outline" className={getProbabilityColor(college.probability)}>
+                                  {college.probability} Chance
+                                </Badge>
+                              )}
                             </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Fees</p>
-                              <p className="font-semibold">{college.fees}</p>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-4 w-4" />
+                                {college.city}, {college.state}
+                              </span>
+                              {college.nirf_rank && <span>NIRF Rank: #{college.nirf_rank}</span>}
+                              <span>{college.type}</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Placement</p>
-                              <p className="font-semibold">{college.placement}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Avg Package</p>
-                              <p className="font-semibold text-secondary">{college.avgPackage}</p>
+                            <div className="grid grid-cols-4 gap-4">
+                              <div>
+                                <p className="text-xs text-muted-foreground">Closing Rank</p>
+                                <p className="font-semibold text-primary">{college.closingRank || 'N/A'}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground">Fees</p>
+                                <p className="font-semibold">{college.fees}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground">Placement</p>
+                                <p className="font-semibold">{college.placement}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground">Avg Package</p>
+                                <p className="font-semibold text-secondary">{college.avgPackage}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                      <Button
+                        size="icon"
+                        variant={selectedColleges.find((c) => c.college_id === college.college_id) ? "default" : "outline"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCollege(college);
+                        }}
+                      >
+                        <Plus className={`h-5 w-5 transition-transform ${selectedColleges.find((c) => c.college_id === college.college_id) ? 'rotate-45' : ''}`} />
+                      </Button>
                     </div>
-                    <Button
-                      size="icon"
-                      variant={selectedColleges.find((c) => c.id === college.id) ? "default" : "outline"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleCollege(college);
-                      }}
-                    >
-                      <Plus className={`h-5 w-5 transition-transform ${selectedColleges.find((c) => c.id === college.id) ? 'rotate-45' : ''}`} />
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
               </div>
             )}
           </div>
