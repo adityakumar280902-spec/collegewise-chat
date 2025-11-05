@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import CollegeForm from "./CollegeForm";
 import ProgramForm from "./ProgramForm";
 import CutoffForm from "./CutoffForm";
+import DataSeeder from "./DataSeeder";
 
 const AdminDashboard = () => {
     const [colleges, setColleges] = useState<College[]>([]);
@@ -40,6 +41,8 @@ const AdminDashboard = () => {
 
     return (
         <div className="space-y-8">
+            <DataSeeder />
+            
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Colleges</h2>
