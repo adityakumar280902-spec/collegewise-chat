@@ -46,9 +46,9 @@ const ProgramForm = ({ program, onSuccess }: ProgramFormProps) => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             if (program) {
-                await updateProgram(program.program_id, values);
+                await updateProgram(program.program_id, values as Partial<Program>);
             } else {
-                await createProgram(values);
+                await createProgram(values as any);
             }
             onSuccess();
         } catch (error) {

@@ -57,9 +57,9 @@ const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             if (cutoff) {
-                await updateCutoff(cutoff.cutoff_id, values);
+                await updateCutoff(cutoff.cutoff_id, values as Partial<Cutoff>);
             } else {
-                await createCutoff(values);
+                await createCutoff(values as any);
             }
             onSuccess();
         } catch (error) {

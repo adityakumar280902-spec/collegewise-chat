@@ -60,9 +60,9 @@ const CollegeForm = ({ college, onSuccess }: CollegeFormProps) => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             if (college) {
-                await updateCollege(college.college_id, values);
+                await updateCollege(college.college_id, values as Partial<College>);
             } else {
-                await createCollege(values);
+                await createCollege(values as any);
             }
             onSuccess();
         } catch (error) {
