@@ -4,6 +4,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { Cutoff, createCutoff, updateCutoff } from "@/lib/collegeApi";
 
 const formSchema = z.object({
@@ -33,6 +34,7 @@ interface CutoffFormProps {
 }
 
 const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
+    const { toast } = useToast();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: cutoff
@@ -61,9 +63,18 @@ const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
             } else {
                 await createCutoff(values as any);
             }
+            toast({
+                title: "Success",
+                description: cutoff ? "Cutoff updated successfully" : "Cutoff created successfully",
+            });
             onSuccess();
         } catch (error) {
             console.error(error);
+            toast({
+                title: "Error",
+                description: "Failed to save cutoff. Please try again.",
+                variant: "destructive",
+            });
         }
     };
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 import { Program, createProgram, updateProgram } from "@/lib/collegeApi";
 
 const formSchema = z.object({
@@ -26,6 +27,7 @@ interface ProgramFormProps {
 }
 
 const ProgramForm = ({ program, onSuccess }: ProgramFormProps) => {
+    const { toast } = useToast();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: program
@@ -50,9 +52,18 @@ const ProgramForm = ({ program, onSuccess }: ProgramFormProps) => {
             } else {
                 await createProgram(values as any);
             }
+            toast({
+                title: "Success",
+                description: program ? "Program updated successfully" : "Program created successfully",
+            });
             onSuccess();
         } catch (error) {
             console.error(error);
+            toast({
+                title: "Error",
+                description: "Failed to save program. Please try again.",
+                variant: "destructive",
+            });
         }
     };
 

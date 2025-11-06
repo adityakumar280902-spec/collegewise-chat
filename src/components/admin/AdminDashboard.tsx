@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { College, Program, Cutoff, getColleges, getPrograms, getCutoffs, deleteCollege, deleteProgram, deleteCutoff } from "@/lib/collegeApi";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import CollegeForm from "./CollegeForm";
 import ProgramForm from "./ProgramForm";
 import CutoffForm from "./CutoffForm";
 import DataSeeder from "./DataSeeder";
 
 const AdminDashboard = () => {
+    const { toast } = useToast();
     const [colleges, setColleges] = useState<College[]>([]);
     const [programs, setPrograms] = useState<Program[]>([]);
     const [cutoffs, setCutoffs] = useState<Cutoff[]>([]);
@@ -37,6 +39,29 @@ const AdminDashboard = () => {
         setEditingCollege(null);
         setEditingProgram(null);
         setEditingCutoff(null);
+        toast({
+            title: "Success",
+            description: "Operation completed successfully",
+        });
+    };
+
+    const handleDelete = async (type: 'college' | 'program' | 'cutoff', id: number) => {
+        try {
+            if (type === 'college') await deleteCollege(id);
+            if (type === 'program') await deleteProgram(id);
+            if (type === 'cutoff') await deleteCutoff(id);
+            fetchData();
+            toast({
+                title: "Deleted",
+                description: `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`,
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to delete. Please try again.",
+                variant: "destructive",
+            });
+        }
     };
 
     return (
@@ -55,7 +80,7 @@ const AdminDashboard = () => {
                             <span>{c.college_name}</span>
                             <div>
                                 <Button variant="outline" size="sm" onClick={() => { setEditingCollege(c); setShowCollegeForm(true); }}>Edit</Button>
-                                <Button variant="destructive" size="sm" className="ml-2" onClick={async () => { await deleteCollege(c.college_id); fetchData(); }}>Delete</Button>
+                                <Button variant="destructive" size="sm" className="ml-2" onClick={() => handleDelete('college', c.college_id)}>Delete</Button>
                             </div>
                         </div>
                     ))}
@@ -74,7 +99,7 @@ const AdminDashboard = () => {
                             <span>{p.program_name} (College ID: {p.college_id})</span>
                             <div>
                                 <Button variant="outline" size="sm" onClick={() => { setEditingProgram(p); setShowProgramForm(true); }}>Edit</Button>
-                                <Button variant="destructive" size="sm" className="ml-2" onClick={async () => { await deleteProgram(p.program_id); fetchData(); }}>Delete</Button>
+                                <Button variant="destructive" size="sm" className="ml-2" onClick={() => handleDelete('program', p.program_id)}>Delete</Button>
                             </div>
                         </div>
                     ))}
@@ -93,7 +118,7 @@ const AdminDashboard = () => {
                             <span>{cu.exam_type} - {cu.year} - {cu.category} (Program ID: {cu.program_id})</span>
                             <div>
                                 <Button variant="outline" size="sm" onClick={() => { setEditingCutoff(cu); setShowCutoffForm(true); }}>Edit</Button>
-                                <Button variant="destructive" size="sm" className="ml-2" onClick={async () => { await deleteCutoff(cu.cutoff_id); fetchData(); }}>Delete</Button>
+                                <Button variant="destructive" size="sm" className="ml-2" onClick={() => handleDelete('cutoff', cu.cutoff_id)}>Delete</Button>
                             </div>
                         </div>
                     ))}

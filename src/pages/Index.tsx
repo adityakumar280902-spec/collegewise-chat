@@ -130,7 +130,7 @@ const Index = () => {
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 justify-center">
-                {trendingColleges?.map((college) => (
+                {trendingColleges?.slice(0, 8).map((college) => (
                   <button
                     key={college.id}
                     className="px-4 py-2 rounded-full bg-muted hover:bg-muted/80 text-sm transition-colors"
