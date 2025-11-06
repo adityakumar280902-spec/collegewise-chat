@@ -4,6 +4,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { College, createCollege, updateCollege } from "@/lib/collegeApi";
 
@@ -103,9 +104,19 @@ const CollegeForm = ({ college, onSuccess }: CollegeFormProps) => {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Type</FormLabel>
-                            <FormControl>
-                                <Input placeholder="IIT" {...field} value={field.value ?? ""} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Government">Government</SelectItem>
+                                    <SelectItem value="Private">Private</SelectItem>
+                                    <SelectItem value="Deemed">Deemed</SelectItem>
+                                    <SelectItem value="Autonomous">Autonomous</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}
