@@ -1,12 +1,14 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Program, createProgram, updateProgram } from "@/lib/collegeApi";
+import { Program, createProgram, updateProgram, getColleges, College } from "@/lib/collegeApi";
 
 const formSchema = z.object({
     college_id: z.preprocess(
@@ -28,6 +30,20 @@ interface ProgramFormProps {
 
 const ProgramForm = ({ program, onSuccess }: ProgramFormProps) => {
     const { toast } = useToast();
+    const [colleges, setColleges] = useState<College[]>([]);
+
+    useEffect(() => {
+        const fetchColleges = async () => {
+            try {
+                const data = await getColleges();
+                setColleges(data);
+            } catch (error) {
+                console.error("Failed to fetch colleges:", error);
+            }
+        };
+        fetchColleges();
+    }, []);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: program
@@ -75,10 +91,21 @@ const ProgramForm = ({ program, onSuccess }: ProgramFormProps) => {
                     name="college_id"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>College ID</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="1" {...field} value={field.value === 0 ? "" : field.value} onChange={e => field.onChange(e.target.value === "" ? 0 : parseInt(e.target.value))} />
-                            </FormControl>
+                            <FormLabel>College</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select college" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {colleges.map((college) => (
+                                        <SelectItem key={college.college_id} value={college.college_id.toString()}>
+                                            {college.college_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}

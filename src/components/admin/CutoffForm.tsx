@@ -4,6 +4,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Cutoff, createCutoff, updateCutoff } from "@/lib/collegeApi";
 
@@ -100,9 +101,22 @@ const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Exam Type</FormLabel>
-                            <FormControl>
-                                <Input placeholder="JEE_ADV" {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select exam type" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="JEE_MAIN">JEE Main</SelectItem>
+                                    <SelectItem value="JEE_ADVANCED">JEE Advanced</SelectItem>
+                                    <SelectItem value="COMEDK">COMEDK</SelectItem>
+                                    <SelectItem value="WBJEE">WBJEE</SelectItem>
+                                    <SelectItem value="NEET">NEET</SelectItem>
+                                    <SelectItem value="CUET">CUET</SelectItem>
+                                    <SelectItem value="KCET">KCET</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -126,9 +140,20 @@ const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Category</FormLabel>
-                            <FormControl>
-                                <Input placeholder="OPEN" {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="GEN">General</SelectItem>
+                                    <SelectItem value="OBC">OBC</SelectItem>
+                                    <SelectItem value="SC">SC</SelectItem>
+                                    <SelectItem value="ST">ST</SelectItem>
+                                    <SelectItem value="EWS">EWS</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}
