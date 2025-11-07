@@ -1,12 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Cutoff, createCutoff, updateCutoff } from "@/lib/collegeApi";
+import { Cutoff, createCutoff, updateCutoff, getPrograms, getColleges, Program, College } from "@/lib/collegeApi";
 
 const formSchema = z.object({
     program_id: z.preprocess(
@@ -36,6 +37,22 @@ interface CutoffFormProps {
 
 const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
     const { toast } = useToast();
+    const [programs, setPrograms] = useState<Program[]>([]);
+    const [colleges, setColleges] = useState<College[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const [programsData, collegesData] = await Promise.all([getPrograms(), getColleges()]);
+            setPrograms(programsData);
+            setColleges(collegesData);
+        };
+        fetchData();
+    }, []);
+
+    const getCollegeName = (collegeId: number) => {
+        return colleges.find(c => c.college_id === collegeId)?.college_name || '';
+    };
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: cutoff
@@ -87,10 +104,21 @@ const CutoffForm = ({ cutoff, onSuccess }: CutoffFormProps) => {
                     name="program_id"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Program ID</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="1" {...field} value={field.value === 0 ? "" : field.value} onChange={e => field.onChange(e.target.value === "" ? 0 : parseInt(e.target.value))} />
-                            </FormControl>
+                            <FormLabel>Program</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString() ?? undefined}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a program" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {programs.map((program) => (
+                                        <SelectItem key={program.program_id} value={program.program_id.toString()}>
+                                            {program.program_name} - {getCollegeName(program.college_id)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}
